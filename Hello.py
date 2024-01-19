@@ -1,51 +1,53 @@
-# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022)
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import streamlit as st
-from streamlit.logger import get_logger
+import pandas as pd 
+from sklearn import datasets
+from sklearn.ensemble import RandomForestClassifier
 
-LOGGER = get_logger(__name__)
+st.write("""
+# Iris Flower Classification App
+         
+This App predicts the type of Iris flower
+         """)
 
+st.sidebar.header('User Input Parameters')
 
-def run():
-    st.set_page_config(
-        page_title="Hello",
-        page_icon="👋",
-    )
+def user_input_features():
+    sepal_length = st.sidebar.slider('Sepal length', 4.3, 7.9, 5.4)
+    sepal_width = st.sidebar.slider('Sepal width',  2.0, 4.4, 3.4)
+    petal_length = st.sidebar.slider('Petal length', 1.0, 6.9, 1.3)
+    petal_width = st.sidebar.slider('Petal width', 0.1, 2.5, 0.2)
 
-    st.write("# Welcome to Streamlit! 👋")
+    data = {
+        'sepal_length': sepal_length,
+        'sepal_width': sepal_width,
+        'petal_length': petal_length,
+        'petal_width': petal_width
+    }
+    features = pd.DataFrame(data, index=[0])
+    return features
 
-    st.sidebar.success("Select a demo above.")
+df = user_input_features()
 
-    st.markdown(
-        """
-        Streamlit is an open-source app framework built specifically for
-        Machine Learning and Data Science projects.
-        **👈 Select a demo from the sidebar** to see some examples
-        of what Streamlit can do!
-        ### Want to learn more?
-        - Check out [streamlit.io](https://streamlit.io)
-        - Jump into our [documentation](https://docs.streamlit.io)
-        - Ask a question in our [community
-          forums](https://discuss.streamlit.io)
-        ### See more complex demos
-        - Use a neural net to [analyze the Udacity Self-driving Car Image
-          Dataset](https://github.com/streamlit/demo-self-driving)
-        - Explore a [New York City rideshare dataset](https://github.com/streamlit/demo-uber-nyc-pickups)
-    """
-    )
+st.subheader("User input parameters")
+st.write(df)
 
+# Load data
+iris = datasets.load_iris()
+x = iris.data
+y = iris.target
 
-if __name__ == "__main__":
-    run()
+clf = RandomForestClassifier()
+clf.fit(x,y)
+
+prediction = clf.predict(df.values)
+prediction_proba = clf.predict_proba(df.values)
+
+st.subheader("Class labels and their corresponsing indices")
+st.write(iris.target_names)
+
+st.subheader("Prediction")
+st.write(iris.target_names[prediction])
+
+st.subheader("Prediction Probability")
+st.write(prediction_proba)
+
